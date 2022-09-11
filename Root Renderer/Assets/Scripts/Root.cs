@@ -1,19 +1,29 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[Serializable]
 public class Root
 {
     public List<RootPoint> Points = new List<RootPoint>();
     public AnimationCurve WidthCurve;
     public float Length = 0f;
-    public Root Parent;
+    [System.NonSerialized] public Root Parent;
     public List<Root> Children = new List<Root>();
+    public LineRenderer LineRenderer;
+    public bool HasParent = false;
 
     public Root()
     {
         
     }
+    
+    public Root(Vector3 position, float startWidth)
+    {
+        AddRootPoint(new RootPoint(position, startWidth));
+    }
+    
 
     // Adds a root point to the root
     public void AddRootPoint(RootPoint rootPoint)
@@ -29,7 +39,8 @@ public class Root
         }
         else
         {
-            Length += Points[Points.Count - 1].Position.magnitude;
+            // Length += Points[Points.Count - 1].Position.magnitude;
+            Length = 0;
         }
         
         // Update the width curve
@@ -73,6 +84,7 @@ public class Root
     public void AddChild(Root child)
     {
         child.Parent = this;
+        child.HasParent = true;
         this.Children.Add(child);
     }
     
@@ -96,5 +108,17 @@ public class Root
             
         // The root has no ungrown children, check up the root for ungrown children
         return Parent.GetUngrownRoot();
+    }
+    
+    // Returns the total length of this root and all its children
+    public float GetTotalLength()
+    {
+        float length = Length;
+        foreach (Root child in Children)
+        {
+            length += GetTotalLength();
+        }
+
+        return length;
     }
 }
