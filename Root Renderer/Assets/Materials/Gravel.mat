@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Dirt
+  m_Name: Gravel
   m_Shader: {fileID: -6465566751694194690, guid: 206afdcb3ee1b4f94be58376fe0a349a, type: 3}
   m_ValidKeywords: []
   m_InvalidKeywords: []
@@ -25,7 +25,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: d4598181cc3934e1ca51415ec2b0180b, type: 3}
+        m_Texture: {fileID: 2800000, guid: 8ad562c3bda084385a37476a32a52c08, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _WaterColorTexture:
@@ -47,5 +47,5 @@ Material:
     m_Ints: []
     m_Floats: []
     m_Colors:
-    - _Color: {r: 0.16037738, g: 0.11910101, b: 0.08699717, a: 1}
+    - _Color: {r: 0.20098798, g: 0.17911176, b: 0.21698111, a: 1}
   m_BuildTextureStacks: []

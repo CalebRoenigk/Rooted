@@ -30,8 +30,18 @@ public class WorldGenerator : MonoBehaviour
     [SerializeField] private TileBase dirtTile;
     [SerializeField] private int dirtOctaves = 3;
     [SerializeField] private float dirtFrequency = 1f;
-
+    
     private ImplicitFractal _dirtNoise;
+    
+    [Header("Gravel")]
+    [Range(0f, 1f)]
+    [SerializeField] private float gravelThreshold = 0.5f;
+    [SerializeField] private Tilemap gravelTilemap;
+    [SerializeField] private TileBase gravelTile;
+    [SerializeField] private int gravelOctaves = 3;
+    [SerializeField] private float gravelFrequency = 1f;
+
+    private ImplicitFractal _gravelNoise;
     
     void Start()
     {
@@ -50,6 +60,14 @@ public class WorldGenerator : MonoBehaviour
             dirtOctaves, 
             dirtFrequency, 
             seed);
+        
+        // Initialize the gravel noise
+        _gravelNoise = new ImplicitFractal (FractalType.MULTI, 
+            BasisType.SIMPLEX, 
+            InterpolationType.QUINTIC, 
+            gravelOctaves, 
+            gravelFrequency, 
+            seed + 100);
         
         // Set the random seed
         UnityEngine.Random.InitState(seed);
@@ -128,9 +146,15 @@ public class WorldGenerator : MonoBehaviour
             if (tile.y <= 0)
             {
                 // Sample the dirt noise to see if dirt should be placed here
-                if (CanGenerateDirt(new Vector2Int(tile.x, tile.y)))
+                if (CanGenerateTile(new Vector2Int(tile.x, tile.y), dirtThreshold, _dirtNoise))
                 {
                     dirtTilemap.SetTile(tile, dirtTile);
+                }
+                
+                // Sample the gravel noise to see if gravel should be placed here
+                if (CanGenerateTile(new Vector2Int(tile.x, tile.y), gravelThreshold, _gravelNoise))
+                {
+                    gravelTilemap.SetTile(tile, gravelTile);
                 }
             }
         }
@@ -144,21 +168,20 @@ public class WorldGenerator : MonoBehaviour
     {
         float value = Mathf.Clamp(RemapFloat((float)_rockNoise.Get(position.x, position.y), -1f, 1f, 0f, 1f), 0f, 1f);
         // Only spawn a rock if dirt is at the position of the rock
-        if(CanGenerateDirt(new Vector2Int(position.x, position.y)))
+        if(CanGenerateTile(new Vector2Int(position.x, position.y), dirtThreshold, _dirtNoise))
         {
             return value > 1f - rockSpawnThreshold.GetThreshold(position.y);
         }
         return false;
     }
     
-    // Returns true if dirt can be generated at the position
-    private bool CanGenerateDirt(Vector2Int position)
+    // Returns true if a tile can be generated at the position
+    private bool CanGenerateTile(Vector2Int position, float threshold, ImplicitFractal noise)
     {
-        float value = Mathf.Clamp(RemapFloat((float)_dirtNoise.Get(position.x, position.y), -1f, 1f, 0f, 1f), 0f, 1f);
-        return value > 1f - dirtThreshold;
+        float value = Mathf.Clamp(RemapFloat((float)noise.Get(position.x, position.y), -1f, 1f, 0f, 1f), 0f, 1f);
+        return value > 1f - threshold;
     }
-    
-    
+
     // Remaps a float to a new range
     public float RemapFloat(float value, float from1, float to1, float from2, float to2)
     {
