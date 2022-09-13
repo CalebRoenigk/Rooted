@@ -151,6 +151,9 @@ public class PlayerController : MonoBehaviour
             // Check if the root is finished growing
             if (_extraEnergy <= 0f && _totalEnergy <= 0f)
             {
+                // Set the rigidbody gravity scale to 0
+                rigidbody2D.gravityScale = 0f;
+                
                 // Check for ungrown child roots
                 Root ungrownRoot = _activeRoot.GetUngrownRoot();
 

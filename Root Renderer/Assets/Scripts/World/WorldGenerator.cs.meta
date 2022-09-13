@@ -1,0 +1,22 @@
+fileFormatVersion: 2
+guid: 32c24801fe88a4deb81c32a71a71605a
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - playerTransform: {instanceID: 0}
+  - rockAssets: {fileID: 11400000, guid: 074777cae623847a1af7edbef989bc38, type: 2}
+  - rockParent: {instanceID: 0}
+  - dirtTilemap: {instanceID: 0}
+  - dirtTile: {fileID: 11400000, guid: 3c9c68449976d4ac482a1937ee2009dc, type: 2}
+  - gravelTilemap: {instanceID: 0}
+  - gravelTile: {fileID: 11400000, guid: dacb61aeb88504d579b3f5984f3f7b78, type: 2}
+  - richSoilTilemap: {instanceID: 0}
+  - richSoilTile: {fileID: 11400000, guid: 78540622d92d54cf48620277b4daa940, type: 2}
+  - waterTilemap: {instanceID: 0}
+  - waterTile: {fileID: 11400000, guid: 6464c9c904d964f53a82e89754e88a81, type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

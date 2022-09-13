@@ -1,7 +1,9 @@
 {
-    "name": "Scripts",
-    "rootNamespace": "",
-    "references": [],
+    "name": "World",
+    "rootNamespace": "World",
+    "references": [
+        "GUID:09ad5daa404dc4f3390a613971dff86d"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
