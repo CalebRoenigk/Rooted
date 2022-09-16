@@ -260,55 +260,55 @@ namespace World
             Chunks.Add(chunk);
 
             // If the chunk has a cave, attempt to fill it with water
-            if (hasCave)
-            {
-                // First get all the regions starting in the current chunk
-                List<List<Vector3Int>> chunkAirRegions = GetAirRegions(chunk);
-
-                // Check each region to see if it exists in the current region collection
-                foreach (List<Vector3Int> chunkAirRegion in chunkAirRegions)
-                {
-                    // Iterate over each tile in the air region
-                    foreach (Vector3Int airTile in chunkAirRegion)
-                    {
-                        // Check if the region tile is already found in any of the current water regions
-                        int regionIndex = IsTileInAirRegions(airTile);
-
-                        // TODO: Region Joining not working?
-
-                        // Merge the region into this new region if it exists already
-                        if (regionIndex != -1)
-                        {
-                            AirRegions[regionIndex] = chunkAirRegion;
-                        }
-                        else
-                        {
-                            AirRegions.Add(chunkAirRegion);
-                        }
-                    }
-
-                    // For the current region, add a level of water to the region
-                    // First get the lowest point in the region
-                    Vector3Int lowestRegionTile = GetLowestRegionTile(chunkAirRegion);
-
-                    // Determine a water level for the air region
-                    int waterLevel = Random.Range(minWaterLevel, maxWaterLevel);
-
-                    // Fill the region with water up to the water level
-                    List<Vector3Int> water = new List<Vector3Int>();
-                    List<TileBase> waterTiles = new List<TileBase>();
-                    foreach (Vector3Int tile in chunkAirRegion)
-                    {
-                        if (tile.y >= lowestRegionTile.y && tile.y <= lowestRegionTile.y + waterLevel)
-                        {
-                            water.Add(tile);
-                            waterTiles.Add(waterTile);
-                        }
-                    }
-
-                    waterTilemap.SetTiles(water.ToArray(), waterTiles.ToArray());
-                }
-            }
+            // if (hasCave)
+            // {
+            //     // First get all the regions starting in the current chunk
+            //     List<List<Vector3Int>> chunkAirRegions = GetAirRegions(chunk);
+            //
+            //     // Check each region to see if it exists in the current region collection
+            //     foreach (List<Vector3Int> chunkAirRegion in chunkAirRegions)
+            //     {
+            //         // Iterate over each tile in the air region
+            //         foreach (Vector3Int airTile in chunkAirRegion)
+            //         {
+            //             // Check if the region tile is already found in any of the current water regions
+            //             int regionIndex = IsTileInAirRegions(airTile);
+            //
+            //             // TODO: Region Joining not working?
+            //
+            //             // Merge the region into this new region if it exists already
+            //             if (regionIndex != -1)
+            //             {
+            //                 AirRegions[regionIndex] = chunkAirRegion;
+            //             }
+            //             else
+            //             {
+            //                 AirRegions.Add(chunkAirRegion);
+            //             }
+            //         }
+            //
+            //         // For the current region, add a level of water to the region
+            //         // First get the lowest point in the region
+            //         Vector3Int lowestRegionTile = GetLowestRegionTile(chunkAirRegion);
+            //
+            //         // Determine a water level for the air region
+            //         int waterLevel = Random.Range(minWaterLevel, maxWaterLevel);
+            //
+            //         // Fill the region with water up to the water level
+            //         List<Vector3Int> water = new List<Vector3Int>();
+            //         List<TileBase> waterTiles = new List<TileBase>();
+            //         foreach (Vector3Int tile in chunkAirRegion)
+            //         {
+            //             if (tile.y >= lowestRegionTile.y && tile.y <= lowestRegionTile.y + waterLevel)
+            //             {
+            //                 water.Add(tile);
+            //                 waterTiles.Add(waterTile);
+            //             }
+            //         }
+            //
+            //         waterTilemap.SetTiles(water.ToArray(), waterTiles.ToArray());
+            //     }
+            // }
         }
 
         #endregion
@@ -444,7 +444,9 @@ namespace World
             List<Vector3Int> positions = new List<Vector3Int>();
             foreach (Vector3Int position in positionArray)
             {
-                positions.Add(position);
+                Vector3Int p = position;
+                p.z = 0;
+                positions.Add(p);
             }
 
             return positions.ToArray();

@@ -10,12 +10,12 @@ TagManager:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Tree
   - Water
   - UI
-  - 
-  - 
-  - 
+  - Tree Map
+  - Lights
+  - World Objects
   - 
   - 
   - 
@@ -45,4 +45,10 @@ TagManager:
     locked: 0
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Tree Map
+    uniqueID: 2679176587
+    locked: 0
+  - name: UI
+    uniqueID: 3526246009
     locked: 0

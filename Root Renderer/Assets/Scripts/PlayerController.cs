@@ -1,9 +1,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using UnityEngine.UI;
+using World;
 
 public class PlayerController : MonoBehaviour
 {
@@ -18,6 +20,13 @@ public class PlayerController : MonoBehaviour
     public bool IsGrounded = false;
 
     [SerializeField] private Tilemap dirtTilemap;
+
+    [Header("World")]
+    [SerializeField] private WorldGenerator worldGenerator;
+
+    [Header("Camera")]
+    [SerializeField] private CameraController cameraController;
+    [SerializeField] private List<Vector3> recapLine = new List<Vector3>();
     
     [Header("Player")]
     [SerializeField] private float _playerSpeed = 1f;
@@ -47,20 +56,24 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float _extraEnergy = 0f;
 
     private float _maxEnergy = 100f;
-    
+
     [Header("UI")]
+    [SerializeField] private UIController uiController;
     [SerializeField] private Slider energySlider;
     [SerializeField] private Slider extraEnergySlider;
-    
+    [SerializeField] private TextMeshProUGUI rootCounter;
 
-    // Start is called before the first frame update
+    [Header("Tree")]
+    [SerializeField] private Growth.Tree tree;
+
+    [Header("Game")]
+    public int Days = 0;
+
     void Start()
     {
-        GenerateRoot(Vector3.zero, 1f);
-        SetActiveRoot(_parentRoot);
+        StartDay();
     }
-
-    // Update is called once per frame
+    
     void FixedUpdate()
     {
         // Only move if there is energy left to move
@@ -93,6 +106,22 @@ public class PlayerController : MonoBehaviour
             // Add the gravity if any
             Vector2 gravityVector = Physics2D.gravity * (rigidbody2D.gravityScale * Time.fixedDeltaTime);
             movementVector += (Vector3)gravityVector;
+            
+            // Check if the ground is changing the movement speed
+            TerrainType footTerrain = worldGenerator.GetTerrainType(transform.position);
+            
+            // Change the movement speed if needed
+            switch (footTerrain)
+            {
+                case TerrainType.Gravel:
+                    movementVector *= 0.5f;
+                    break;
+                case TerrainType.RichSoil:
+                    movementVector *= 1.25f;
+                    break;
+                default:
+                    break;
+            }
         
             // Add the distance traveled
             _activeRootDistanceTraveled += movementVector.magnitude;
@@ -148,6 +177,9 @@ public class PlayerController : MonoBehaviour
                 _activeRootRenderer.widthCurve = _activeRoot.WidthCurve;
             }
             
+            // Update the root score
+            tree.RootScore = GetActiveRootScore();
+            
             // Check if the root is finished growing
             if (_extraEnergy <= 0f && _totalEnergy <= 0f)
             {
@@ -159,8 +191,9 @@ public class PlayerController : MonoBehaviour
 
                 if (!ungrownRoot.HasParent && ungrownRoot != _parentRoot)
                 {
-                    // There are no ungrown roots
+                    // There are no ungrown roots, the day is finished
                     Debug.Log("Root Growth finished!");
+                    FinishDay();
                 }
                 else
                 {
@@ -171,7 +204,7 @@ public class PlayerController : MonoBehaviour
         }
         
         // Update the energy slider visuals
-        UpdateEnergySliders();
+        // UpdateEnergySliders();
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -204,6 +237,10 @@ public class PlayerController : MonoBehaviour
         // Draw forward movement ray
         Gizmos.color = Color.green;
         Gizmos.DrawRay(transform.position, -transform.up*_playerSpeed);
+        
+        // Draw the grid position
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireCube(Vector3Int.FloorToInt(transform.position) + Vector3.one/2f, Vector3.one);
     }
 
     // Updates the energy sliders
@@ -223,11 +260,11 @@ public class PlayerController : MonoBehaviour
     {
         // Get the tile position of the root
         Vector3Int rootGridPosition = dirtTilemap.WorldToCell(transform.position);
-        
+
         // If there are no tiles under the root, the root is not grounded
         return dirtTilemap.GetTile(rootGridPosition);
     }
-    
+
     // Updates the collider
     private void UpdateCollider()
     {
@@ -281,4 +318,124 @@ public class PlayerController : MonoBehaviour
         // Move the player position
         rigidbody2D.MovePosition(root.Points[0].Position);
     }
+    
+    // Checks if the game has been lost
+    private void CheckGameOver()
+    {
+        if (tree.RootsRemaining <= 0)
+        {
+            // Game Over
+            Debug.Log("Game Over");
+        }
+    }
+    
+    // Run at the end of a day to get ready for the next day
+    private void FinishDay()
+    {
+        // Remove a single root from the remaining count
+        tree.RootsRemaining--;
+        
+        // Update the root count UI
+        rootCounter.text = $"Roots Remaining: {tree.RootsRemaining}";
+        
+        CheckGameOver();
+        
+        // Recap the day by reversing over active root to the start
+        CollectRootHistory();
+        cameraController.SetRecapTimer(recapLine);
+        uiController.DisplayRecap(GetDayStats());
+        
+        // Store the root score to the tree score
+        // Update the root score
+        tree.RootScore = GetActiveRootScore();
+        
+        // Store the root score
+        tree.StoreRoot();
+    }
+    
+    // Starts the day
+    public void StartDay()
+    {
+        // Add to the day counter
+        Days++;
+        
+        transform.position = Vector3.zero;
+        
+        // Spawn the next root
+        _parentSpawned = false;
+        cameraController.Recapping = false;
+        GenerateRoot(Vector3.zero, 1f);
+        SetActiveRoot(_parentRoot);
+    }
+    
+    // Collects the history points for the current recap
+    private void CollectRootHistory()
+    {
+        // First get the points of the active root
+        List<Vector3> rootPoints = new List<Vector3>();
+        foreach (RootPoint rootPoint in _activeRoot.Points)
+        {
+            rootPoints.Add(rootPoint.Position);
+        }
+        
+        // Simplfy the line
+        List<Vector3> simplifiedRoot = new List<Vector3>();
+        LineUtility.Simplify(rootPoints, 0.375f, simplifiedRoot);
+        simplifiedRoot.Reverse();
+
+        if (simplifiedRoot[simplifiedRoot.Count - 1] != Vector3.zero)
+        {
+            simplifiedRoot.Add(Vector3.zero);
+        }
+
+        // Store the new recap
+        recapLine = simplifiedRoot;
+    }
+
+    // Returns the stats of the current day
+    public DayStats GetDayStats()
+    {
+        float totalLength = _parentRoot.GetTotalLength();
+        int rootsGrown = Root.GetChildCount(_parentRoot) + 1;
+
+        return new DayStats(totalLength, rootsGrown);
+    }
+    
+    // Returns a total current active root score
+    private int GetActiveRootScore()
+    {
+        // Depth-based scoring
+        // Each 15 tiles of depth are worth 100 pts
+        int depthScore = Mathf.RoundToInt(Mathf.Floor(Mathf.Abs(Mathf.Clamp(Root.GetLowestDepth(_parentRoot), int.MinValue, 0)) / 15f) * 100f);
+        
+        // Length-based scoring
+        // Each 50 units of length are worth 100pts
+        int lengthScore =  Mathf.RoundToInt(Mathf.Floor(_parentRoot.GetTotalLength()/50f)*100f);
+
+        Debug.Log($"DepthScore {depthScore} LengthScore {lengthScore} TotalScore {depthScore+lengthScore}");
+        
+        return depthScore + lengthScore;
+    }
+    
+
+    [Serializable]
+    public struct DayStats
+    {
+        public float DistanceGrown;
+        public int RootsMade;
+
+        public DayStats(float DistanceGrown, int RootsMade)
+        {
+            this.DistanceGrown = DistanceGrown;
+            this.RootsMade = RootsMade;
+        }
+    }
 }
+
+// TODO: Make resistance thru different types of ground
+// Add scoring - More options
+// Make Root cards?
+// Make tree have evolve bonus choices
+// Make root power system where cards activated can increase root energy, speed, etc
+// Regenerate split power ups each week?
+// Make more powerups?

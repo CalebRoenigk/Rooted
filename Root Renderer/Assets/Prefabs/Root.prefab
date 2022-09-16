@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3663453186236750659}
   - component: {fileID: 3663453186236750656}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Root
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -40,7 +40,7 @@ LineRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3663453186236750657}
   m_Enabled: 1
-  m_CastShadows: 1
+  m_CastShadows: 0
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
   m_StaticShadowCaster: 0
@@ -126,6 +126,6 @@ LineRenderer:
     alignment: 0
     textureMode: 1
     shadowBias: 0.5
-    generateLightingData: 0
+    generateLightingData: 1
   m_UseWorldSpace: 1
   m_Loop: 0

@@ -121,4 +121,38 @@ public class Root
 
         return length;
     }
+    
+    // Returns the count of all children
+    public static int GetChildCount(Root root)
+    {
+        int counter = 0;
+        foreach (Root child in root.Children)
+        {
+            counter++;
+            counter += GetChildCount(child);
+        }
+
+        return counter;
+    }
+    
+    // Returns the lowest depth the root has reached
+    public static int GetLowestDepth(Root root)
+    {
+        int depth = 0;
+        
+        foreach (RootPoint rootPoint in root.Points)
+        {
+            if (rootPoint.Position.y < depth)
+            {
+                depth = Mathf.CeilToInt(rootPoint.Position.y);
+            }
+        }
+        
+        foreach (Root child in root.Children)
+        {
+            depth = Mathf.Min(depth, GetLowestDepth(child));
+        }
+
+        return depth;
+    }
 }
