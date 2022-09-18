@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Rock
   - Powerup
+  - Stat Card
   layers:
   - Default
   - TransparentFX

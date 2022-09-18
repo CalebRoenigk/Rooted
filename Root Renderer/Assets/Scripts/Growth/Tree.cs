@@ -19,6 +19,9 @@ namespace Growth
         [SerializeField] private Slider mainScore;
         [SerializeField] private Slider rootScore;
         [SerializeField] private TextMeshProUGUI levelCounter;
+
+        [Header("Stats")]
+        [SerializeField] public TreeStats TreeStats;
         
         public int Score
         {
@@ -110,5 +113,13 @@ namespace Growth
         
         // TODO: Method to add new roots to the root count of the tree when it evolves
         
+        // TODO: Stat System
+        // Card/stat system
+        // Types of improvements
+        // Stat cards: Only positive stat increases
+        // Growth cards: Cards that give stat increases but at the cost of another stat
+
+        // Stats: Growth Total Energy, Growth Speed, Extra Root, flat bonus points, point scaling, better maneuverability
+        // Growth Cards: More total energy but slower, Faster but less roots, get faster and have more energy but root total is capped to a value, You can split once per root run but your energy total is halved, speed is lowered but your points are worth more
     }
 }

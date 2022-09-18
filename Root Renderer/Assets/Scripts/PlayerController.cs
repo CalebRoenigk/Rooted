@@ -1,11 +1,13 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using UnityEngine.UI;
 using World;
+using Growth;
 
 public class PlayerController : MonoBehaviour
 {
@@ -29,8 +31,6 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private List<Vector3> recapLine = new List<Vector3>();
     
     [Header("Player")]
-    [SerializeField] private float _playerSpeed = 1f;
-    [SerializeField] private float _rotationalSpeed = 2f;
     [SerializeField] private float _rootPointSpacing = 1f;
     
     [Header("Physics")]
@@ -54,8 +54,6 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float _energyBurnRate = 1f;
     [SerializeField] private float _totalEnergy = 100f;
     [SerializeField] private float _extraEnergy = 0f;
-
-    private float _maxEnergy = 100f;
 
     [Header("UI")]
     [SerializeField] private UIController uiController;
@@ -95,13 +93,13 @@ public class PlayerController : MonoBehaviour
             // Rotate the player
             Quaternion quaternion = transform.rotation;
             Vector3 rotationAngles = transform.eulerAngles;
-            rotationAngles.z += rotation * (_rotationalSpeed * Time.fixedDeltaTime);
+            rotationAngles.z += rotation * (tree.TreeStats.GrowthManuverability.GetValue() * Time.fixedDeltaTime);
             quaternion.eulerAngles = rotationAngles;
             rigidbody2D.MoveRotation(quaternion);
             // transform.eulerAngles = rotationAngles;
         
             // Get the down vector that will act as the forward vector of movement for the player
-            Vector3 movementVector = -transform.up * (_playerSpeed * Time.fixedDeltaTime);
+            Vector3 movementVector = -transform.up * (tree.TreeStats.GrowthSpeed.GetValue() * Time.fixedDeltaTime);
             
             // Add the gravity if any
             Vector2 gravityVector = Physics2D.gravity * (rigidbody2D.gravityScale * Time.fixedDeltaTime);
@@ -153,7 +151,7 @@ public class PlayerController : MonoBehaviour
             }
             
             // Set the width
-            _activeRootWidth = _totalEnergy / _maxEnergy;
+            _activeRootWidth = _totalEnergy / tree.TreeStats.Energy.GetValue();
             
             // Update the collider
             UpdateCollider();
@@ -226,6 +224,47 @@ public class PlayerController : MonoBehaviour
             // Destroy the powerup
             Destroy(other.gameObject, 0f);
         }
+
+        switch (other.gameObject.tag)
+        {
+            case "Powerup":
+                // Powerup
+                PowerupType powerupType = other.gameObject.GetComponent<Powerup>().PowerupType;
+
+                switch (powerupType)
+                {
+                    case PowerupType.Split:
+                        // Create a child root here for later
+                        GenerateRoot(transform.position, _activeRootWidth);
+                        break;
+                    default:
+                        break;
+                }
+            
+                // Destroy the powerup
+                Destroy(other.gameObject, 0f);
+                break;
+            case "Stat Card":
+                // Stat Card
+                TreeCard treeCard = other.gameObject.GetComponent<TreeCard>();
+                // Add the stat card to the modifiers of the tree
+                tree.TreeStats.AddModifer(treeCard.StatType, treeCard.Modifier);
+
+                if (treeCard.StatType == StatType.Energy)
+                {
+                    // Add the energy if its a flat bonus
+                    if (treeCard.Modifier.OperationType == StatOperation.Addition)
+                    {
+                        _extraEnergy += treeCard.Modifier.Value;
+                    }
+                }
+                
+                // Destroy the Stat Card
+                Destroy(other.gameObject, 0f);
+                break;
+            default:
+                break;
+        }
     }
 
     private void OnDrawGizmos()
@@ -236,7 +275,7 @@ public class PlayerController : MonoBehaviour
         
         // Draw forward movement ray
         Gizmos.color = Color.green;
-        Gizmos.DrawRay(transform.position, -transform.up*_playerSpeed);
+        Gizmos.DrawRay(transform.position, -transform.up*tree.TreeStats.GrowthSpeed.GetValue());
         
         // Draw the grid position
         Gizmos.color = Color.yellow;
@@ -247,11 +286,11 @@ public class PlayerController : MonoBehaviour
     private void UpdateEnergySliders()
     {
         // Update the main energy
-        float mainEnergyFill = _totalEnergy / _maxEnergy;
+        float mainEnergyFill = _totalEnergy / tree.TreeStats.Energy.GetValue();
         energySlider.value = mainEnergyFill;
         
         // Update the extra energy
-        float extraEnergyFill = Mathf.Clamp(_totalEnergy + _extraEnergy, 0, _maxEnergy) / _maxEnergy;
+        float extraEnergyFill = Mathf.Clamp(_totalEnergy + _extraEnergy, 0, tree.TreeStats.Energy.GetValue()) / tree.TreeStats.Energy.GetValue();
         extraEnergySlider.value = extraEnergyFill;
     }
 
@@ -312,7 +351,7 @@ public class PlayerController : MonoBehaviour
         _activeRootWidth = root.Points[0].Width;
         
         // Reset the energy properties
-        _totalEnergy = _maxEnergy;
+        _totalEnergy = tree.TreeStats.Energy.GetValue();
         _extraEnergy = 0f;
         
         // Move the player position
@@ -407,10 +446,14 @@ public class PlayerController : MonoBehaviour
         // Depth-based scoring
         // Each 15 tiles of depth are worth 100 pts
         int depthScore = Mathf.RoundToInt(Mathf.Floor(Mathf.Abs(Mathf.Clamp(Root.GetLowestDepth(_parentRoot), int.MinValue, 0)) / 15f) * 100f);
+        // Modify the score based on stat modifiers
+        depthScore = Mathf.RoundToInt(TreeStat.GetOneOffValue(tree.TreeStats.Scoring, depthScore));
         
         // Length-based scoring
         // Each 50 units of length are worth 100pts
         int lengthScore =  Mathf.RoundToInt(Mathf.Floor(_parentRoot.GetTotalLength()/50f)*100f);
+        // Modify the score based on stat modifiers
+        lengthScore = Mathf.RoundToInt(TreeStat.GetOneOffValue(tree.TreeStats.Scoring, lengthScore));
 
         Debug.Log($"DepthScore {depthScore} LengthScore {lengthScore} TotalScore {depthScore+lengthScore}");
         
@@ -439,3 +482,4 @@ public class PlayerController : MonoBehaviour
 // Make root power system where cards activated can increase root energy, speed, etc
 // Regenerate split power ups each week?
 // Make more powerups?
+
