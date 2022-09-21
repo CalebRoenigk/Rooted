@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 01f2b85994fff4cfcaaeb02072b3ee4f, type: 3}
+  m_Name: RootCardAssets
+  m_EditorClassIdentifier: 
+  RootCardResources:
+  - StatType: 1
+    Icon: {fileID: -643993524, guid: cdd1a7322d4dc460e8784d5900eb0285, type: 3}
+  - StatType: 2
+    Icon: {fileID: -1547741885, guid: cdd1a7322d4dc460e8784d5900eb0285, type: 3}
+  - StatType: 3
+    Icon: {fileID: 388144171, guid: cdd1a7322d4dc460e8784d5900eb0285, type: 3}
+  - StatType: 4
+    Icon: {fileID: 832764862, guid: cdd1a7322d4dc460e8784d5900eb0285, type: 3}
+  - StatType: 5
+    Icon: {fileID: 1512937046, guid: cdd1a7322d4dc460e8784d5900eb0285, type: 3}
